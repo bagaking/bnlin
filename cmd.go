@@ -3,14 +3,15 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"github.com/bagaking/botheater/utils"
-	"github.com/khicago/irr"
 	"io"
 	"os"
 	"os/exec"
 	"runtime"
 	"strings"
 	"sync"
+
+	"github.com/bagaking/botheater/utils"
+	"github.com/khicago/irr"
 )
 
 const (
@@ -119,7 +120,7 @@ func execute(comment string) error {
 	}
 
 	// Make the script executable
-	if err = os.Chmod(tmpFile.Name(), 0755); err != nil {
+	if err = os.Chmod(tmpFile.Name(), 0o755); err != nil {
 		return irr.Wrap(err, "failed to make temp file executable")
 	}
 

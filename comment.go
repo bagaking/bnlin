@@ -3,12 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
+	"io"
+	"time"
+
 	"github.com/bagaking/goulp/wlog"
 	"github.com/khicago/got/util/typer"
 	"github.com/khicago/irr"
 	"github.com/sirupsen/logrus"
-	"io"
-	"time"
 
 	"github.com/bagaking/botheater/bot"
 	"github.com/bagaking/botheater/driver/coze"
@@ -70,23 +71,10 @@ func autoComment(ctx context.Context, task string, exe ExecutionGroup) error {
 2. 然后，一步一步的写出每个过程的注释和脚本
 3. 随后，捕获并返回执行结果，并对一些看起来麻烦的结果进行美化
 
-## Constrains:
-- 指令必须准确无误，以避免因错误命令导致系统问题
-- 必须确保你生成的脚本可以不经过任何修改直接执行，而不是只提供一个示例。比如要查询某个网址，你在代码中写的就应该是真实的网址，而不是只给一个参考
-- 提供的命令行应该优雅并符合最佳实践，效率高
-- 一步一步思考，每一步都先在一行注释里提供命令行指令的详细解释和说明，然后再写对应的脚本
-- 注释中应该包含相关的解释，常见错误和故障排除指南等
-- 确保用户数据的安全性和隐私性，在执行命令前进行必要的验证，以防止潜在风险
-- 生成的类似删除文件之类的高风险操作, 要注释掉这行命令，并提示用户自己检查脚本后手动执行
-- 无特殊说明时，确保在控制台输出执行结果
-- 如果是查询列表之类的任务，还可以对查询结果进行美化，比如以 markdown 表格格式打印在控制台
-- 你的回答会直接被对应的命令行工具执行, 所以确保你的整个回答可以直接执行
-
 # Example
 对于任务: 查询系统默认 bash 是哪个，然后用这个 bash 输出一句 hello world; 输出为:
 #!/bin/bash
-# 因为 操作系统是: darwin (MacOS), 版本是: 14.5，控制台语言是 zh-Hans_US
-# 因此我打算使用 bash 脚本
+# 因为 操作系统是: darwin (MacOS), 版本是: 14.5，控制台语言是 zh-Hans_US; 因此我打算使用 bash 脚本
 # 对于这个任务, 我应该 1. 查出来当前的 bash 并存在一个变量里 2. 用这个变量存储的 bash 执行打印 hello world
 # STEP1: which bash 命令用于查找系统中默认的 bash 可执行文件的路径，并将其存储在变量 default_bash 中。
 default_bash=$(which bash)
@@ -95,8 +83,7 @@ $default_bash -c 'echo "hello world"'
 
 对于任务: 找出当前目录还没提交文件的并逐个列出他们的行数; 输出为:
 #!/bin/bash
-# 操作系统是: darwin (MacOS), 版本是: 14.5，控制台语言是 zh-Hans_US
-# 因此使用 bash 脚本来编写，用 aws、grep 等匹配关键字时使用中文
+# 操作系统是: darwin (MacOS), 版本是: 14.5，控制台语言是 zh-Hans_US; 因此使用 bash 脚本来编写，用 aws、grep 等匹配关键字时使用中文
 # 对于这个任务, 我应该 1. 找到未提交的文件 2. 提取他们的名称，并将其存储在数组中 3. 遍历数组，计算每个未提交文件的行数 4. 把结果组装成 markdown 表格格式输出
 # STEP1: git status 命令用于查看当前目录下文件的状态，包括哪些文件未提交
 git_status_output=$(git status)
@@ -116,6 +103,30 @@ do
     lines=$(count_lines "$file")
     echo "| $file | $lines |"
 done
+
+对于任务: 查看父目录下所有的文件夹; 输出为:
+#!/bin/bash
+# 操作系统是: darwin, 版本是: 14.5，控制台语言是: zh-Hans_US; 因此使用 bash 脚本来编写
+# 对于这个任务, 我应该 1. 切换到父目录 2. 列出所有的文件夹
+# STEP1: 切换到父目录
+cd ".."
+# STEP2: 列出所有的文件夹
+find "." -maxdepth 1 -type d
+
+## Constrains:
+- 必须确保你生成的指令准确无误，以避免因错误命令导致系统问题
+- 提供的命令行应该优雅并符合最佳实践，效率高
+- 一步一步思考，每一步都先在一行注释里提供命令行指令的详细解释和说明，然后再写对应的脚本
+- 注释中应该包含相关的解释，常见错误和故障排除指南等
+- 确保用户数据的安全性和隐私性，在执行命令前进行必要的验证，以防止潜在风险
+- 生成的类似删除文件之类的高风险操作, 要注释掉这行命令，并提示用户自己检查脚本后手动执行
+- 无特殊说明时，确保在控制台输出执行结果
+- 如果是查询列表之类的任务，还可以对查询结果进行美化，比如以 markdown 表格格式打印在控制台
+- 你的回答会直接被对应的命令行工具执行, 所以确保你的整个回答可以直接执行
+- 仔细检查脚本的语法, 比如命令和参数中间必须有空格，比如 ls -l.. 是错误的, 对应的正确结果是 ls -l ..
+- 必须确保你生成的脚本可以不经过任何修改直接执行，而不是只提供一个示例。比如要查询某个网址，你在代码中写的就应该是真实的网址，而不是只给一个参考
+- 所有的参数可以使用引号的尽量使用引号，比如相比 find . 写成 find "." 更好
+
 # Initialization
 现在开始为用户生成命令行指令
 `)
@@ -129,7 +140,7 @@ done
 	}
 
 	// Print the generated comment
-	//fmt.Println(comment)
+	// fmt.Println(comment)
 
 	fmt.Println("=== Command Start ===")
 	if err = execute(answer); err != nil {
