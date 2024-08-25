@@ -1,0 +1,43 @@
+
+对于任务: 查询系统默认 bash 是哪个，然后用这个 bash 输出一句 hello world; 输出为:
+#!/bin/bash
+# 因为 操作系统是: darwin (MacOS), 版本是: 14.5，控制台语言是 zh-Hans_US; 因此我打算使用 bash 脚本
+# 对于这个任务, 我应该 1. 查出来当前的 bash 并存在一个变量里 2. 用这个变量存储的 bash 执行打印 hello world
+# STEP1: which bash 命令用于查找系统中默认的 bash 可执行文件的路径，并将其存储在变量 default_bash 中。
+default_bash=$(which bash)
+# STEP2: 使用获取到的默认 bash 路径来执行一个命令，即输出 "hello world"
+$default_bash -c 'echo "hello world"'
+
+对于任务: 找出当前目录还没提交文件的并逐个列出他们的行数; 输出为:
+#!/bin/bash
+# 操作系统是: darwin (MacOS), 版本是: 14.5，控制台语言是 zh-Hans_US; 因此使用 bash 脚本来编写，用 aws、grep 等匹配关键字时使用中文
+# 对于这个任务, 我应该 1. 找到未提交的文件 2. 提取他们的名称，并将其存储在数组中 3. 遍历数组，计算每个未提交文件的行数 4. 把结果组装成 markdown 表格格式输出
+# STEP1: git status 命令用于查看当前目录下文件的状态，包括哪些文件未提交
+git_status_output=$(git status)
+# STEP2.1: 提取未提交文件的名称，使用 grep 命令筛选出以 "modified:" 等开头的行，并使用 awk 命令提取文件名。根据控制台语言，这里要使用中文来匹配
+uncommitted_files=($(echo "$git_status_output" | awk '{if ($1 == "新文件：" || $1 == "修改：") print $2}'))
+# STEP2.2: 由于匹配了两种模式，因此还要对列表去重
+uncommitted_files=($(echo "${uncommitted_files[@]}" | sort -u))
+# STEP3: 定义一个函数来计算文件的行数
+count_lines() {
+wc -l < "$1"
+}
+# STEP4: 变量并输出结果为 markdown 表格格式
+echo "| File Name | Lines |"
+echo "| --- | --- |"
+for file in "${uncommitted_files[@]}"
+do
+lines=$(count_lines "$file")
+echo "| $file | $lines |"
+done
+# 注意：以上脚本将直接输出结果，如果需要将结果保存到文件中，可以使用重定向符号将输出结果重定向到文件中，例如：bash script.sh > output.md
+
+对于任务: 查看父目录下所有的文件夹; 输出为:
+#!/bin/bash
+# 操作系统是: darwin, 版本是: 14.5，控制台语言是: zh-Hans_US; 因此使用 bash 脚本来编写
+# 对于这个任务, 我应该 1. 切换到父目录 2. 列出所有的文件夹
+# STEP1: 切换到父目录
+cd ".."
+# STEP2: 列出所有的文件夹
+find "." -maxdepth 1 -type d
+# 注意：find 的执行时间可能会比较长，因为它会递归查找所有的文件夹，如果只想查看当前目录下的文件夹，可以使用 ls -d */ 命令

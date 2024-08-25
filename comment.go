@@ -5,6 +5,7 @@ import (
 	_ "embed"
 	"fmt"
 	"io"
+	"strings"
 	"time"
 
 	"github.com/bagaking/goulp/wlog"
@@ -18,6 +19,9 @@ import (
 //go:embed role_prompt.md
 var RolePrompt string
 
+//go:embed role_few_shot_example.txt
+var FowShotExample string
+
 // autoComment generates a commit comment based on the provided diff information.
 func autoComment(ctx context.Context, task string, exe ExecutionGroup) error {
 	// disable logrus to hide bot debug
@@ -29,7 +33,7 @@ func autoComment(ctx context.Context, task string, exe ExecutionGroup) error {
 	}
 
 	// Use command-line flags for access key and secret key if provided
-	exe = exe.Use(RolePrompt)
+	exe = exe.Use(strings.Replace(RolePrompt, "{{role_few_shot_example.txt}}", FowShotExample, -1))
 	if err := exe.Assert(); err != nil {
 		return irr.Wrap(err, "assertion failed")
 	}
