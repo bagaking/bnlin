@@ -7,6 +7,8 @@ import (
 
 func TestExecutionGroupUse(t *testing.T) {
 	t.Setenv("DOUBAO_ENDPOINT", "env-endpoint")
+	t.Setenv("VOLC_ACCESSKEY", "")
+	t.Setenv("VOLC_SECRETKEY", "")
 
 	got := (ExecutionGroup{}).Use("default prompt")
 
