@@ -167,27 +167,53 @@ func (doc hereDoc) matchesEnd(line string) bool {
 }
 
 func hereDocDelimiter(line string) (hereDoc, bool) {
-	fields := strings.Fields(line)
-	for i, field := range fields {
-		if field == "<<" || field == "<<-" {
-			if i+1 >= len(fields) {
+	for i := 0; i < len(line)-1; i++ {
+		switch line[i] {
+		case '\\':
+			i++
+		case '\'', '"':
+			quote := line[i]
+			i++
+			for i < len(line) {
+				if quote == '"' && line[i] == '\\' {
+					i += 2
+					continue
+				}
+				if line[i] == quote {
+					break
+				}
+				i++
+			}
+		case '<':
+			if line[i+1] != '<' {
+				continue
+			}
+			if i+2 < len(line) && line[i+2] == '<' {
+				continue
+			}
+
+			start := i + 2
+			stripTabs := false
+			if start < len(line) && line[start] == '-' {
+				stripTabs = true
+				start++
+			}
+
+			for start < len(line) && (line[start] == ' ' || line[start] == '\t') {
+				start++
+			}
+			if start >= len(line) {
 				return hereDoc{}, false
 			}
-			return hereDoc{
-				delimiter: strings.Trim(fields[i+1], `'"`),
-				stripTabs: field == "<<-",
-			}, true
-		}
-		if strings.HasPrefix(field, "<<") && !strings.HasPrefix(field, "<<<") {
-			stripTabs := strings.HasPrefix(field, "<<-")
-			delimiter := strings.TrimPrefix(field, "<<")
-			delimiter = strings.TrimPrefix(delimiter, "-")
-			if delimiter != "" {
-				return hereDoc{
-					delimiter: strings.Trim(delimiter, `'"`),
-					stripTabs: stripTabs,
-				}, true
+
+			end := start
+			for end < len(line) && line[end] != ' ' && line[end] != '\t' {
+				end++
 			}
+			return hereDoc{
+				delimiter: strings.Trim(line[start:end], `'"`),
+				stripTabs: stripTabs,
+			}, true
 		}
 	}
 	return hereDoc{}, false

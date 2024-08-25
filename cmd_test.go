@@ -56,6 +56,19 @@ func TestExecuteSkipsMarkdownFencesAndComments(t *testing.T) {
 				"```\n",
 		},
 		{
+			name: "compact here-doc operator keeps markdown",
+			comment: "cat<<'EOF'\n" +
+				"```bash title=\"compact.sh\"\n" +
+				"# kept as here-doc content\n" +
+				"printf 'kept-compact-here-doc\\n'\n" +
+				"```\n" +
+				"EOF\n",
+			want: "```bash title=\"compact.sh\"\n" +
+				"# kept as here-doc content\n" +
+				"printf 'kept-compact-here-doc\\n'\n" +
+				"```\n",
+		},
+		{
 			name: "tab stripped here-doc before attributed fence",
 			comment: "cat <<-'EOF'\n" +
 				"printf 'kept-tabbed-here-doc\\n'\n" +
