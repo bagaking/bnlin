@@ -92,7 +92,7 @@ func execute(comment string) error {
 	var commentContent strings.Builder
 	for _, line := range lines {
 		l := strings.TrimSpace(line)
-		if l == "" {
+		if l == "" || l == "#" || l == "```" || l == "```bash" || l == "```sh" {
 			continue
 		}
 		if strings.HasPrefix(l, "#") {

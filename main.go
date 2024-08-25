@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/bagaking/botheater/driver"
 	"github.com/bagaking/botheater/driver/coze"
 	"github.com/urfave/cli/v2"
 
@@ -19,7 +20,10 @@ const (
 
 // defaultConf is the default configuration for the bot.
 var defaultConf = bot.Config{
-	Endpoint:   "",
+	DriverConf: driver.Config{
+		Driver:   DriverDoubao,
+		Endpoint: "",
+	},
 	PrefabName: "bnlin",
 	Prompt: &bot.Prompt{
 		Content: "",
@@ -38,6 +42,7 @@ Main Usage:
 	}).End
 
 	app.Child(CMDNameRun).Flags(
+		&cli.StringFlag{Name: "driver", Usage: fmt.Sprintf("select the driver, 'doubao' and 'ollama' are supported"), Aliases: []string{"d"}, Required: false, DefaultText: "doubao"},
 		&cli.StringFlag{Name: "access_key", Usage: fmt.Sprintf("Access key for the API (alternative to %s)", coze.EnvKeyVOLCAccessKey), Aliases: []string{"ak"}, Required: false},
 		&cli.StringFlag{Name: "secret_key", Usage: fmt.Sprintf("Secret key for the API (alternative to %s)", coze.EnvKeyVOLCAccessKey), Aliases: []string{"sk"}, Required: false},
 		&cli.StringFlag{Name: "endpoint", Usage: fmt.Sprintf("Endpoint for generating the comment (alternative to  %s)", coze.EnvKeyDoubaoEndpoint), Aliases: []string{"e"}, Required: false},
@@ -46,17 +51,19 @@ Main Usage:
 
 Example:
    bnlin run find all uncommitted files and list their line counts
-   bnlin run -ak your_access_key -sk your_secret_key -e your_endpoint find all uncommitted files and list their line counts
+   bnlin run -driver doubao -ak your_access_key -sk your_secret_key -e your_endpoint find all uncommitted files and list their line counts
+   bnlin run -driver ollama -e llama3.1 find all uncommitted files and list their line counts
 
 Environment Variables:
    VOLC_ACCESS_KEY      Access key for the API (alternative to -ak)
    VOLC_SECRET_KEY      Secret key for the API (alternative to -sk)
    DOU_BAO_ENDPOINT     Endpoint for the API (alternative to -e)`).End.Action(func(c *cli.Context) error {
 		eg := ExecutionGroup{
-			ak: c.String("access_key"),
-			sk: c.String("secret_key"),
-			ep: c.String("endpoint"),
-			pp: c.String("prompt"),
+			driver: c.String("driver"),
+			ak:     c.String("access_key"),
+			sk:     c.String("secret_key"),
+			ep:     c.String("endpoint"),
+			pp:     c.String("prompt"),
 		}
 		if c.Args().Len() == 0 {
 			return cli.ShowCommandHelp(c, CMDNameRun)
