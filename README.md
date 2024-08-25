@@ -1,18 +1,25 @@
-# bnlin - AI-Powered Bash Script Generator
+# bnlin - Natural Language Bash Script Helper
 
-bnlin (short of Bagaking Nature Language bINary), is an innovative command-line tool that leverages 
-AI to automatically generate and execute bash scripts based on natural language input. It seamlessly 
-translates user requests into precise bash commands, making complex system operations accessible to 
-users of all skill levels.
+bnlin (short for Bagaking Nature Language bINary) is a command-line tool that
+uses an AI driver to draft and execute bash scripts from natural language input.
+It is intended for users who want a faster starting point for shell operations
+while still reviewing what will run in their own environment.
 
 ## Features
 
-- **Natural Language Processing**: Convert plain English instructions into executable bash scripts.
-- **Cross-Platform Compatibility**: Supports Windows, Linux, and MacOS.
+- **Natural Language Input**: Convert plain English instructions into bash script candidates.
+- **Platform Awareness**: Detects the operating system and includes that context when generating scripts.
 - **Flexible Configuration**: Set up via command-line flags or environment variables.
-- **Intelligent OS Detection**: Adapts commands to the specific operating system environment.
-- **Real-time Execution**: Generates and runs scripts on-the-fly.
-- **User-Friendly Output**: Provides clear, formatted results for easy understanding.
+- **Script Execution**: Generates and runs scripts from the command line.
+- **Readable Output**: Prints command results in a formatted terminal view.
+
+## Platform support
+
+bnlin generates bash scripts and executes them with bash semantics. Linux and
+macOS are the primary supported environments. On Windows, use bnlin from an
+environment that provides bash-compatible script execution, such as WSL or Git
+Bash. Native Windows shell semantics such as PowerShell and `cmd.exe` are not
+the execution target.
 
 ## Installation
 
