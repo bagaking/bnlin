@@ -95,7 +95,7 @@ func executeWithWriters(comment string, stdout io.Writer, stderr io.Writer) erro
 	var commentContent strings.Builder
 	for _, line := range lines {
 		l := strings.TrimSpace(line)
-		if l == "" || l == "#" || l == "```" || l == "```bash" || l == "```sh" {
+		if l == "" || l == "#" || isMarkdownCodeFence(l) {
 			continue
 		}
 		if strings.HasPrefix(l, "#") {
@@ -136,4 +136,8 @@ func executeWithWriters(comment string, stdout io.Writer, stderr io.Writer) erro
 	}
 
 	return nil
+}
+
+func isMarkdownCodeFence(line string) bool {
+	return strings.HasPrefix(line, "```")
 }

@@ -9,21 +9,50 @@ import (
 )
 
 func TestExecuteSkipsMarkdownFencesAndComments(t *testing.T) {
-	comment := "# The generated plan can include prose comments that should not execute.\n" +
-		"```bash\n" +
-		"printf 'ran-script-line\\n'\n" +
-		"# This explanatory comment should not be sent to bash.\n" +
-		"```\n"
-	stdout, stderr, err := captureExecuteOutput(t, comment)
-	if err != nil {
-		t.Fatalf("execute(...) error = %v, want nil", err)
+	tests := []struct {
+		name    string
+		comment string
+		want    string
+	}{
+		{
+			name: "plain bash fence",
+			comment: "# The generated plan can include prose comments that should not execute.\n" +
+				"```bash\n" +
+				"printf 'ran-script-line\\n'\n" +
+				"# This explanatory comment should not be sent to bash.\n" +
+				"```\n",
+			want: "ran-script-line\n",
+		},
+		{
+			name: "bash fence with markdown attributes",
+			comment: "```bash title=\"generated-script.sh\"\n" +
+				"printf 'ran-attributed-fence\\n'\n" +
+				"```\n",
+			want: "ran-attributed-fence\n",
+		},
+		{
+			name: "sh fence with markdown attributes",
+			comment: "```sh linenos\n" +
+				"printf 'ran-sh-fence\\n'\n" +
+				"```\n",
+			want: "ran-sh-fence\n",
+		},
 	}
 
-	if stdout != "ran-script-line\n" {
-		t.Errorf("execute(...).stdout = %q, want %q", stdout, "ran-script-line\n")
-	}
-	if stderr != "" {
-		t.Errorf("execute(...).stderr = %q, want empty", stderr)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			stdout, stderr, err := captureExecuteOutput(t, tt.comment)
+			if err != nil {
+				t.Fatalf("execute(%q) error = %v, want nil", tt.comment, err)
+			}
+
+			if stdout != tt.want {
+				t.Errorf("execute(%q).stdout = %q, want %q", tt.comment, stdout, tt.want)
+			}
+			if stderr != "" {
+				t.Errorf("execute(%q).stderr = %q, want empty", tt.comment, stderr)
+			}
+		})
 	}
 }
 
