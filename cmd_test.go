@@ -37,6 +37,24 @@ func TestExecuteSkipsMarkdownFencesAndComments(t *testing.T) {
 				"```\n",
 			want: "ran-sh-fence\n",
 		},
+		{
+			name: "plain sh fence",
+			comment: "```sh\n" +
+				"printf 'ran-plain-sh-fence\\n'\n" +
+				"```\n",
+			want: "ran-plain-sh-fence\n",
+		},
+		{
+			name: "markdown fence inside here-doc",
+			comment: "cat <<'EOF'\n" +
+				"```bash title=\"x.sh\"\n" +
+				"printf 'kept-here-doc-fence\\n'\n" +
+				"```\n" +
+				"EOF\n",
+			want: "```bash title=\"x.sh\"\n" +
+				"printf 'kept-here-doc-fence\\n'\n" +
+				"```\n",
+		},
 	}
 
 	for _, tt := range tests {

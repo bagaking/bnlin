@@ -93,7 +93,16 @@ func executeWithWriters(comment string, stdout io.Writer, stderr io.Writer) erro
 	lines := strings.Split(comment, "\n")
 	var scriptContent strings.Builder
 	var commentContent strings.Builder
+	var hereDocDelimiters []string
 	for _, line := range lines {
+		if len(hereDocDelimiters) > 0 {
+			scriptContent.WriteString(line + "\n")
+			if line == hereDocDelimiters[0] {
+				hereDocDelimiters = hereDocDelimiters[1:]
+			}
+			continue
+		}
+
 		l := strings.TrimSpace(line)
 		if l == "" || l == "#" || isMarkdownCodeFence(l) {
 			continue
@@ -104,6 +113,9 @@ func executeWithWriters(comment string, stdout io.Writer, stderr io.Writer) erro
 		}
 
 		scriptContent.WriteString(line + "\n")
+		if delimiter, ok := hereDocDelimiter(line); ok {
+			hereDocDelimiters = append(hereDocDelimiters, delimiter)
+		}
 	}
 
 	fmt.Println(utils.SPrintWithCallStack("execution plan", strings.TrimSpace(commentContent.String()), 180))
@@ -140,4 +152,24 @@ func executeWithWriters(comment string, stdout io.Writer, stderr io.Writer) erro
 
 func isMarkdownCodeFence(line string) bool {
 	return strings.HasPrefix(line, "```")
+}
+
+func hereDocDelimiter(line string) (string, bool) {
+	fields := strings.Fields(line)
+	for i, field := range fields {
+		if field == "<<" || field == "<<-" {
+			if i+1 >= len(fields) {
+				return "", false
+			}
+			return strings.Trim(fields[i+1], `'"`), true
+		}
+		if strings.HasPrefix(field, "<<") && !strings.HasPrefix(field, "<<<") {
+			delimiter := strings.TrimPrefix(field, "<<")
+			delimiter = strings.TrimPrefix(delimiter, "-")
+			if delimiter != "" {
+				return strings.Trim(delimiter, `'"`), true
+			}
+		}
+	}
+	return "", false
 }
