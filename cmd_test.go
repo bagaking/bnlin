@@ -97,6 +97,21 @@ func TestExecuteSkipsMarkdownFencesAndComments(t *testing.T) {
 			want: "printf 'kept-tabbed-here-doc\\n'\n" +
 				"ran-after-tabbed-here-doc\n",
 		},
+		{
+			name: "backslash quoted here-doc before attributed fence",
+			comment: "cat <<\\EOF\n" +
+				"```bash title=\"literal.sh\"\n" +
+				"printf 'kept-backslash-here-doc\\n'\n" +
+				"```\n" +
+				"EOF\n" +
+				"```bash title=\"outer.sh\"\n" +
+				"printf 'ran-after-backslash-here-doc\\n'\n" +
+				"```\n",
+			want: "```bash title=\"literal.sh\"\n" +
+				"printf 'kept-backslash-here-doc\\n'\n" +
+				"```\n" +
+				"ran-after-backslash-here-doc\n",
+		},
 	}
 
 	for _, tt := range tests {
@@ -111,6 +126,31 @@ func TestExecuteSkipsMarkdownFencesAndComments(t *testing.T) {
 			}
 			if stderr != "" {
 				t.Errorf("execute(%q).stderr = %q, want empty", tt.comment, stderr)
+			}
+		})
+	}
+}
+
+func TestHereDocDelimiterRemovesQuotes(t *testing.T) {
+	tests := []struct {
+		name string
+		line string
+		want string
+	}{
+		{name: "single quoted", line: "cat <<'EOF'", want: "EOF"},
+		{name: "double quoted", line: "cat <<\"EOF\"", want: "EOF"},
+		{name: "backslash quoted prefix", line: "cat <<\\EOF", want: "EOF"},
+		{name: "backslash quoted middle", line: "cat <<E\\OF", want: "EOF"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			doc, ok := hereDocDelimiter(tt.line)
+			if !ok {
+				t.Fatalf("hereDocDelimiter(%q) ok = false, want true", tt.line)
+			}
+			if doc.delimiter != tt.want {
+				t.Errorf("hereDocDelimiter(%q).delimiter = %q, want %q", tt.line, doc.delimiter, tt.want)
 			}
 		})
 	}

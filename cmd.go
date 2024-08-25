@@ -212,7 +212,7 @@ func hereDocDelimiter(line string) (hereDoc, bool) {
 				end++
 			}
 			return hereDoc{
-				delimiter: strings.Trim(line[start:end], `'"`),
+				delimiter: hereDocDelimiterQuoteRemoval(line[start:end]),
 				stripTabs: stripTabs,
 			}, true
 		case '#':
@@ -223,6 +223,43 @@ func hereDocDelimiter(line string) (hereDoc, bool) {
 		}
 	}
 	return hereDoc{}, false
+}
+
+func hereDocDelimiterQuoteRemoval(word string) string {
+	var out strings.Builder
+	for i := 0; i < len(word); i++ {
+		switch word[i] {
+		case '\\':
+			if i+1 < len(word) {
+				i++
+				out.WriteByte(word[i])
+			} else {
+				out.WriteByte(word[i])
+			}
+		case '\'':
+			i++
+			for i < len(word) && word[i] != '\'' {
+				out.WriteByte(word[i])
+				i++
+			}
+		case '"':
+			i++
+			for i < len(word) && word[i] != '"' {
+				if word[i] == '\\' && i+1 < len(word) && isDoubleQuoteEscapedByte(word[i+1]) {
+					i++
+				}
+				out.WriteByte(word[i])
+				i++
+			}
+		default:
+			out.WriteByte(word[i])
+		}
+	}
+	return out.String()
+}
+
+func isDoubleQuoteEscapedByte(b byte) bool {
+	return b == '$' || b == '`' || b == '"' || b == '\\'
 }
 
 func isShellCommentStart(line string, index int) bool {
