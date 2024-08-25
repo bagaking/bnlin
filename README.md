@@ -22,6 +22,20 @@ To install bnlin, ensure you have Go installed, then run:
 go install github.com/bagaking/bnlin@latest
 ```
 
+## Local validation
+
+Run the project test suite with:
+
+```bash
+make test
+```
+
+This target runs:
+
+```bash
+go test ./...
+```
+
 ## Usage
 
 The basic syntax for using bnlin is:
