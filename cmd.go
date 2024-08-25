@@ -153,12 +153,14 @@ func execute(comment string) error {
 	}()
 
 	// Wait for the command to finish
-	if err = cmd.Wait(); err != nil {
-		return irr.Wrap(err, "command execution failed")
-	}
+	waitErr := cmd.Wait()
 
 	// Wait for all output to be copied
 	wg.Wait()
+
+	if waitErr != nil {
+		return irr.Wrap(waitErr, "command execution failed")
+	}
 
 	return nil
 }
