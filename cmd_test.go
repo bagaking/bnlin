@@ -69,6 +69,24 @@ func TestExecuteSkipsMarkdownFencesAndComments(t *testing.T) {
 				"```\n",
 		},
 		{
+			name: "here-string does not enter here-doc",
+			comment: "cat <<<\"hello\"\n" +
+				"```bash title=\"after-here-string.sh\"\n" +
+				"printf 'ran-after-here-string\\n'\n" +
+				"```\n" +
+				"# printf 'skipped-after-here-string\\n'\n",
+			want: "hello\n" +
+				"ran-after-here-string\n",
+		},
+		{
+			name: "trailing shell comment does not enter here-doc",
+			comment: "printf x # cat<<'EOF'\n" +
+				"```bash title=\"after-comment.sh\"\n" +
+				"printf 'ran-after-trailing-comment\\n'\n" +
+				"```\n",
+			want: "xran-after-trailing-comment\n",
+		},
+		{
 			name: "tab stripped here-doc before attributed fence",
 			comment: "cat <<-'EOF'\n" +
 				"printf 'kept-tabbed-here-doc\\n'\n" +

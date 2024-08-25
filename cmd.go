@@ -189,6 +189,7 @@ func hereDocDelimiter(line string) (hereDoc, bool) {
 				continue
 			}
 			if i+2 < len(line) && line[i+2] == '<' {
+				i += 2
 				continue
 			}
 
@@ -214,7 +215,16 @@ func hereDocDelimiter(line string) (hereDoc, bool) {
 				delimiter: strings.Trim(line[start:end], `'"`),
 				stripTabs: stripTabs,
 			}, true
+		case '#':
+			if !isShellCommentStart(line, i) {
+				continue
+			}
+			return hereDoc{}, false
 		}
 	}
 	return hereDoc{}, false
+}
+
+func isShellCommentStart(line string, index int) bool {
+	return index == 0 || line[index-1] == ' ' || line[index-1] == '\t'
 }
