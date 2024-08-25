@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"testing"
 )
 
@@ -108,5 +109,30 @@ func TestExecutionGroupAssert(t *testing.T) {
 				t.Errorf("ExecutionGroup.Assert(%+v) error = %v, want error presence = %t", tt.group, err, tt.wantErr)
 			}
 		})
+	}
+}
+
+func TestExecutionGroupBotDoesNotMutateDefaultPrompt(t *testing.T) {
+	originalPrompt := defaultConf.Prompt
+	originalContent := defaultConf.Prompt.Content
+	t.Cleanup(func() {
+		defaultConf.Prompt = originalPrompt
+		defaultConf.Prompt.Content = originalContent
+	})
+
+	got := (ExecutionGroup{
+		driver: DriverOllama,
+		ep:     "llama3.1",
+		pp:     "custom prompt",
+	}).Bot(context.Background())
+
+	if got.Prompt == defaultConf.Prompt {
+		t.Errorf("ExecutionGroup.Bot(...).Prompt shares default prompt pointer %p, want independent prompt", got.Prompt)
+	}
+	if got.Prompt.Content != "custom prompt" {
+		t.Errorf("ExecutionGroup.Bot(...).Prompt.Content = %q, want %q", got.Prompt.Content, "custom prompt")
+	}
+	if defaultConf.Prompt.Content != originalContent {
+		t.Errorf("ExecutionGroup.Bot(...) mutated defaultConf.Prompt.Content = %q, want %q", defaultConf.Prompt.Content, originalContent)
 	}
 }

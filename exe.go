@@ -45,7 +45,11 @@ func (eg ExecutionGroup) Bot(ctx context.Context) *bot.Bot {
 	}
 
 	conf := defaultConf
-	conf.Prompt.Content = eg.pp
+	if defaultConf.Prompt != nil {
+		prompt := *defaultConf.Prompt
+		prompt.Content = eg.pp
+		conf.Prompt = &prompt
+	}
 	return bot.New(conf, d, nil)
 }
 
