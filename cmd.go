@@ -93,12 +93,12 @@ func executeWithWriters(comment string, stdout io.Writer, stderr io.Writer) erro
 	lines := strings.Split(comment, "\n")
 	var scriptContent strings.Builder
 	var commentContent strings.Builder
-	var hereDocDelimiters []string
+	var hereDocs []hereDoc
 	for _, line := range lines {
-		if len(hereDocDelimiters) > 0 {
+		if len(hereDocs) > 0 {
 			scriptContent.WriteString(line + "\n")
-			if line == hereDocDelimiters[0] {
-				hereDocDelimiters = hereDocDelimiters[1:]
+			if hereDocs[0].matchesEnd(line) {
+				hereDocs = hereDocs[1:]
 			}
 			continue
 		}
@@ -113,8 +113,8 @@ func executeWithWriters(comment string, stdout io.Writer, stderr io.Writer) erro
 		}
 
 		scriptContent.WriteString(line + "\n")
-		if delimiter, ok := hereDocDelimiter(line); ok {
-			hereDocDelimiters = append(hereDocDelimiters, delimiter)
+		if doc, ok := hereDocDelimiter(line); ok {
+			hereDocs = append(hereDocs, doc)
 		}
 	}
 
@@ -154,22 +154,41 @@ func isMarkdownCodeFence(line string) bool {
 	return strings.HasPrefix(line, "```")
 }
 
-func hereDocDelimiter(line string) (string, bool) {
+type hereDoc struct {
+	delimiter string
+	stripTabs bool
+}
+
+func (doc hereDoc) matchesEnd(line string) bool {
+	if doc.stripTabs {
+		line = strings.TrimLeft(line, "\t")
+	}
+	return line == doc.delimiter
+}
+
+func hereDocDelimiter(line string) (hereDoc, bool) {
 	fields := strings.Fields(line)
 	for i, field := range fields {
 		if field == "<<" || field == "<<-" {
 			if i+1 >= len(fields) {
-				return "", false
+				return hereDoc{}, false
 			}
-			return strings.Trim(fields[i+1], `'"`), true
+			return hereDoc{
+				delimiter: strings.Trim(fields[i+1], `'"`),
+				stripTabs: field == "<<-",
+			}, true
 		}
 		if strings.HasPrefix(field, "<<") && !strings.HasPrefix(field, "<<<") {
+			stripTabs := strings.HasPrefix(field, "<<-")
 			delimiter := strings.TrimPrefix(field, "<<")
 			delimiter = strings.TrimPrefix(delimiter, "-")
 			if delimiter != "" {
-				return strings.Trim(delimiter, `'"`), true
+				return hereDoc{
+					delimiter: strings.Trim(delimiter, `'"`),
+					stripTabs: stripTabs,
+				}, true
 			}
 		}
 	}
-	return "", false
+	return hereDoc{}, false
 }

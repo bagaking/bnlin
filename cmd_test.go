@@ -55,6 +55,17 @@ func TestExecuteSkipsMarkdownFencesAndComments(t *testing.T) {
 				"printf 'kept-here-doc-fence\\n'\n" +
 				"```\n",
 		},
+		{
+			name: "tab stripped here-doc before attributed fence",
+			comment: "cat <<-'EOF'\n" +
+				"printf 'kept-tabbed-here-doc\\n'\n" +
+				"\tEOF\n" +
+				"```bash title=\"outer.sh\"\n" +
+				"printf 'ran-after-tabbed-here-doc\\n'\n" +
+				"```\n",
+			want: "printf 'kept-tabbed-here-doc\\n'\n" +
+				"ran-after-tabbed-here-doc\n",
+		},
 	}
 
 	for _, tt := range tests {
