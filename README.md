@@ -96,11 +96,11 @@ bnlin can be configured using command-line flags or environment variables:
 
 - **Access Key**:
     - Flag: `-ak` or `--access_key`
-    - Env: `VOLC_ACCESS_KEY`
+    - Env: `VOLC_ACCESSKEY`
 
 - **Secret Key**:
     - Flag: `-sk` or `--secret_key`
-    - Env: `VOLC_SECRET_KEY`
+    - Env: `VOLC_SECRETKEY`
 
 - **API Endpoint**:
     - Flag: `-e` or `--endpoint`

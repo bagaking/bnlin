@@ -44,7 +44,7 @@ Main Usage:
 	app.Child(CMDNameRun).Flags(
 		&cli.StringFlag{Name: "driver", Usage: fmt.Sprintf("select the driver, 'doubao' and 'ollama' are supported"), Aliases: []string{"d"}, Required: false, DefaultText: "doubao"},
 		&cli.StringFlag{Name: "access_key", Usage: fmt.Sprintf("Access key for the API (alternative to %s)", coze.EnvKeyVOLCAccessKey), Aliases: []string{"ak"}, Required: false},
-		&cli.StringFlag{Name: "secret_key", Usage: fmt.Sprintf("Secret key for the API (alternative to %s)", coze.EnvKeyVOLCAccessKey), Aliases: []string{"sk"}, Required: false},
+		&cli.StringFlag{Name: "secret_key", Usage: fmt.Sprintf("Secret key for the API (alternative to %s)", coze.EnvKeyVOLCSecretKey), Aliases: []string{"sk"}, Required: false},
 		&cli.StringFlag{Name: "endpoint", Usage: fmt.Sprintf("Endpoint for generating the comment (alternative to  %s)", coze.EnvKeyDoubaoEndpoint), Aliases: []string{"e"}, Required: false},
 		&cli.StringFlag{Name: "prompt", Usage: "Custom prompt for generating the comment", Aliases: []string{"p"}, Required: false},
 	).Set.Alias("r").Usage(`run <commands in natural language>
@@ -55,9 +55,9 @@ Example:
    bnlin run -driver ollama -e llama3.1 find all uncommitted files and list their line counts
 
 Environment Variables:
-   VOLC_ACCESS_KEY      Access key for the API (alternative to -ak)
-   VOLC_SECRET_KEY      Secret key for the API (alternative to -sk)
-   DOU_BAO_ENDPOINT     Endpoint for the API (alternative to -e)`).End.Action(func(c *cli.Context) error {
+   VOLC_ACCESSKEY       Access key for the API (alternative to -ak)
+   VOLC_SECRETKEY       Secret key for the API (alternative to -sk)
+   DOUBAO_ENDPOINT      Endpoint for the API (alternative to -e)`).End.Action(func(c *cli.Context) error {
 		eg := ExecutionGroup{
 			driver: c.String("driver"),
 			ak:     c.String("access_key"),
