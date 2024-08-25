@@ -128,11 +128,18 @@ bnlin can be configured using command-line flags or environment variables:
     - Flag: `-e` or `--endpoint`
     - Env: `DOUBAO_ENDPOINT`
 
-Example with flags:
+Recommended environment-based configuration keeps credentials out of the
+interactive command line:
 
 ```bash
-bnlin run -ak your_access_key -sk your_secret_key -e your_endpoint "your command here"
+export VOLC_ACCESSKEY=<access-key>
+export VOLC_SECRETKEY=<secret-key>
+export DOUBAO_ENDPOINT=<endpoint>
+bnlin run "your command here"
 ```
+
+The credential flags remain available for controlled, non-interactive use, but
+environment variables are the safer default for regular shell sessions.
 
 For more detailed information and advanced usage, run:
 
