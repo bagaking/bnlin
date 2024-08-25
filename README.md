@@ -1,6 +1,6 @@
 # bnlin - Natural Language Bash Script Helper
 
-bnlin (short for Bagaking Nature Language bINary) is a command-line tool that
+bnlin (short for Bagaking Natural Language bINary) is a command-line tool that
 uses an AI driver to draft and execute bash scripts from natural language input.
 It is intended for users who want a faster starting point for shell operations
 while still reviewing what will run in their own environment.
@@ -54,35 +54,39 @@ bnlin run <your command in natural language>
 ### Examples
 
 1. List uncommitted files and their line counts:
+
 ```bash
    bnlin run find all uncommitted files and list their line counts
 ```
 
 2. View folders in the parent directory:
+
 ```bash
    bnlin run "show me all folders in the parent directory"
 ```
 
 ### Configuration
 
-driver can be configured using command-line flags
+The driver can be configured using command-line flags:
+
 ```bash
 bnlin run --driver doubao <your command in natural language>
 ```
 
-by default, the driver is `doubao`, therefor the following command is equivalent to the previous one
+By default, the driver is `doubao`; therefore, the following command is equivalent to the previous one:
+
 ```bash
 bnlin run <your command in natural language>
 ```
 
 #### Ollama
 
-when using the `ollama` driver, endpoint is required, it stands for the model to use, 
-for example, it can be `llama3.1`
+When using the `ollama` driver, an endpoint is required. It identifies the model to use;
+for example, it can be `llama3.1`.
 
-you can configure the endpoitn using command-line flags:
+You can configure the endpoint using command-line flags:
 
-```bash 
+```bash
 bnlin run --driver ollama -e llama3.1 "your command here"
 ```
 
@@ -103,6 +107,7 @@ bnlin can be configured using command-line flags or environment variables:
     - Env: `DOUBAO_ENDPOINT`
 
 Example with flags:
+
 ```bash
 bnlin run -ak your_access_key -sk your_secret_key -e your_endpoint "your command here"
 ```
@@ -120,6 +125,7 @@ This project is licensed under the [MIT License](LICENSE).
 ## Acknowledgements
 
 bnlin is built with the following excellent libraries:
+
 - [github.com/bagaking/botheater](https://github.com/bagaking/botheater)
 - [github.com/bagaking/easycmd](https://github.com/bagaking/easycmd)
 
