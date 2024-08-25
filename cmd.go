@@ -8,7 +8,6 @@ import (
 	"os/exec"
 	"runtime"
 	"strings"
-	"sync"
 
 	"github.com/bagaking/botheater/utils"
 	"github.com/khicago/irr"
@@ -86,6 +85,10 @@ func getOSInfo() (osType, version, lang string) {
 }
 
 func execute(comment string) error {
+	return executeWithWriters(comment, os.Stdout, os.Stderr)
+}
+
+func executeWithWriters(comment string, stdout io.Writer, stderr io.Writer) error {
 	// Extract the actual command from the comment
 	lines := strings.Split(comment, "\n")
 	var scriptContent strings.Builder
@@ -124,42 +127,12 @@ func execute(comment string) error {
 		return irr.Wrap(err, "failed to make temp file executable")
 	}
 
-	// Execute the script
 	cmd := exec.Command("bash", tmpFile.Name())
-	stdoutPipe, err := cmd.StdoutPipe()
-	if err != nil {
-		return irr.Wrap(err, "failed to get stdout pipe")
-	}
-	stderrPipe, err := cmd.StderrPipe()
-	if err != nil {
-		return irr.Wrap(err, "failed to get stderr pipe")
-	}
+	cmd.Stdout = stdout
+	cmd.Stderr = stderr
 
-	if err = cmd.Start(); err != nil {
-		return irr.Wrap(err, "failed to start command")
-	}
-
-	// Stream the output
-	var wg sync.WaitGroup
-	wg.Add(2)
-
-	go func() {
-		defer wg.Done()
-		io.Copy(os.Stdout, stdoutPipe)
-	}()
-	go func() {
-		defer wg.Done()
-		io.Copy(os.Stderr, stderrPipe)
-	}()
-
-	// Wait for the command to finish
-	waitErr := cmd.Wait()
-
-	// Wait for all output to be copied
-	wg.Wait()
-
-	if waitErr != nil {
-		return irr.Wrap(waitErr, "command execution failed")
+	if err = cmd.Run(); err != nil {
+		return irr.Wrap(err, "command execution failed")
 	}
 
 	return nil

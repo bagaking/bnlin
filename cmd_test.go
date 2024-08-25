@@ -1,8 +1,7 @@
 package main
 
 import (
-	"io"
-	"os"
+	"bytes"
 	"strings"
 	"testing"
 )
@@ -35,63 +34,10 @@ exit 7
 func captureExecuteOutput(t *testing.T, comment string) (stdout string, stderr string, err error) {
 	t.Helper()
 
-	oldStdout := os.Stdout
-	oldStderr := os.Stderr
+	var stdoutBuffer bytes.Buffer
+	var stderrBuffer bytes.Buffer
 
-	stdoutReader, stdoutWriter, err := os.Pipe()
-	if err != nil {
-		t.Fatalf("os.Pipe() stdout error = %v", err)
-	}
-	stderrReader, stderrWriter, err := os.Pipe()
-	if err != nil {
-		t.Fatalf("os.Pipe() stderr error = %v", err)
-	}
+	err = executeWithWriters(comment, &stdoutBuffer, &stderrBuffer)
 
-	os.Stdout = stdoutWriter
-	os.Stderr = stderrWriter
-	defer func() {
-		os.Stdout = oldStdout
-		os.Stderr = oldStderr
-	}()
-
-	stdoutCh := make(chan []byte, 1)
-	stderrCh := make(chan []byte, 1)
-	readErrCh := make(chan error, 2)
-	go func() {
-		stdoutBytes, readErr := io.ReadAll(stdoutReader)
-		if readErr != nil {
-			readErrCh <- readErr
-			return
-		}
-		stdoutCh <- stdoutBytes
-	}()
-	go func() {
-		stderrBytes, readErr := io.ReadAll(stderrReader)
-		if readErr != nil {
-			readErrCh <- readErr
-			return
-		}
-		stderrCh <- stderrBytes
-	}()
-
-	err = execute(comment)
-
-	if closeErr := stdoutWriter.Close(); closeErr != nil {
-		t.Fatalf("stdoutWriter.Close() error = %v", closeErr)
-	}
-	if closeErr := stderrWriter.Close(); closeErr != nil {
-		t.Fatalf("stderrWriter.Close() error = %v", closeErr)
-	}
-
-	var stdoutBytes, stderrBytes []byte
-	for i := 0; i < 2; i++ {
-		select {
-		case stdoutBytes = <-stdoutCh:
-		case stderrBytes = <-stderrCh:
-		case readErr := <-readErrCh:
-			t.Fatalf("io.ReadAll(...) error = %v", readErr)
-		}
-	}
-
-	return string(stdoutBytes), string(stderrBytes), err
+	return stdoutBuffer.String(), stderrBuffer.String(), err
 }
