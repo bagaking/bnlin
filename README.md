@@ -27,7 +27,7 @@ go install github.com/bagaking/bnlin@latest
 The basic syntax for using bnlin is:
 
 ```bash
-bnlin run "<your command in natural language>"
+bnlin run <your command in natural language>
 ```
 
 ### Examples
@@ -44,6 +44,29 @@ bnlin run "<your command in natural language>"
 
 ### Configuration
 
+driver can be configured using command-line flags
+```bash
+bnlin run --driver doubao <your command in natural language>
+```
+
+by default, the driver is `doubao`, therefor the following command is equivalent to the previous one
+```bash
+bnlin run <your command in natural language>
+```
+
+#### Ollama
+
+when using the `ollama` driver, endpoint is required, it stands for the model to use, 
+for example, it can be `llama3.1`
+
+you can configure the endpoitn using command-line flags:
+
+```bash 
+bnlin run --driver ollama -e llama3.1 "your command here"
+```
+
+#### Doubao
+
 bnlin can be configured using command-line flags or environment variables:
 
 - **Access Key**:
@@ -56,7 +79,7 @@ bnlin can be configured using command-line flags or environment variables:
 
 - **API Endpoint**:
     - Flag: `-e` or `--endpoint`
-    - Env: `DOU_BAO_ENDPOINT`
+    - Env: `DOUBAO_ENDPOINT`
 
 Example with flags:
 ```bash
