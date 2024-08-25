@@ -5,6 +5,28 @@ uses an AI driver to draft and execute bash scripts from natural language input.
 It is intended for users who want a faster starting point for shell operations
 while still reviewing what will run in their own environment.
 
+## Safety Model
+
+bnlin is an execution helper, not a sandbox. It turns natural language into a
+bash script candidate and runs that script with the permissions and environment
+of the current shell session.
+
+- **Generated bash can be destructive**: Review the generated execution plan and
+  command intent before using bnlin on important files, production systems, or
+  shared machines.
+- **Use a controlled environment**: Prefer a disposable checkout, temporary
+  directory, container, VM, or other limited workspace when the requested task
+  may modify files or system state.
+- **Review command boundaries**: Treat filesystem writes, deletes, network
+  calls, package installation, service control, and permission changes as
+  high-risk operations that need manual inspection.
+- **Protect secrets**: Do not put access keys, tokens, passwords, private file
+  contents, or other sensitive values into natural-language prompts, shell
+  history, logs, issue reports, or screenshots.
+- **Driver output is not trusted**: The AI driver may produce incorrect,
+  overbroad, or platform-incompatible commands. The user remains responsible
+  for deciding whether the generated script should run.
+
 ## Features
 
 - **Natural Language Input**: Convert plain English instructions into bash script candidates.
